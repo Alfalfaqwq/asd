@@ -33,14 +33,104 @@
 
     .custom-cursor {
         position: absolute;
-        width: 64px;
-        height: 64px;
+        width: 128px;  /* 放大一倍 */
+        height: 128px; /* 放大一倍 */
         background-image: url('sucai/waooo.png');
-        background-size: cover;
+        background-size: contain; /* 改为contain确保图片完整显示 */
+        background-repeat: no-repeat;
         pointer-events: none;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%); /* 调整为中心对齐 */
         transition: transform 0.1s ease-out;
         z-index: 9999;
+        transform-origin: center center; /* 修改transform原点为中心 */
+    }
+
+    .cursor-trail {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: radial-gradient(circle, 
+            rgba(255, 0, 0, 0.9) 0%,
+            rgba(255, 165, 0, 0.6) 33%,
+            rgba(255, 255, 0, 0.4) 66%,
+            rgba(0, 128, 0, 0.2) 100%);
+        pointer-events: none;
+        z-index: 9997;
+        opacity: 0.9;
+        transform: translate(-50%, -50%);
+        animation: rainbow-trail 0.5s ease-out forwards, color-cycle 2s linear infinite;
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.6),
+                   0 0 20px rgba(255, 165, 0, 0.4),
+                   0 0 30px rgba(255, 255, 0, 0.2);
+        border-radius: 50%;
+    }
+
+    @keyframes rainbow-trail {
+        0% {
+            opacity: 0.9;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+            opacity: 0.6;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+    }
+
+    @keyframes color-cycle {
+        0% {
+            background: radial-gradient(circle, 
+                rgba(255, 0, 0, 0.9) 0%,
+                rgba(255, 165, 0, 0.6) 33%,
+                rgba(255, 255, 0, 0.4) 66%,
+                rgba(0, 128, 0, 0.2) 100%);
+        }
+        25% {
+            background: radial-gradient(circle, 
+                rgba(255, 165, 0, 0.9) 0%,
+                rgba(255, 255, 0, 0.6) 33%,
+                rgba(0, 128, 0, 0.4) 66%,
+                rgba(0, 0, 255, 0.2) 100%);
+        }
+        50% {
+            background: radial-gradient(circle, 
+                rgba(255, 255, 0, 0.9) 0%,
+                rgba(0, 128, 0, 0.6) 33%,
+                rgba(0, 0, 255, 0.4) 66%,
+                rgba(75, 0, 130, 0.2) 100%);
+        }
+        75% {
+            background: radial-gradient(circle, 
+                rgba(0, 128, 0, 0.9) 0%,
+                rgba(0, 0, 255, 0.6) 33%,
+                rgba(75, 0, 130, 0.4) 66%,
+                rgba(238, 130, 238, 0.2) 100%);
+        }
+        100% {
+            background: radial-gradient(circle, 
+                rgba(255, 0, 0, 0.9) 0%,
+                rgba(255, 165, 0, 0.6) 33%,
+                rgba(255, 255, 0, 0.4) 66%,
+                rgba(0, 128, 0, 0.2) 100%);
+        }
+    }
+
+    @keyframes trail-fade {
+        0% {
+            opacity: 0.8;
+            transform: translate(-50%, -50%) rotate(45deg) scaleY(1);
+        }
+        50% {
+            opacity: 0.5;
+            transform: translate(-50%, -50%) rotate(45deg) scaleY(0.8);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(-50%, -50%) rotate(45deg) scaleY(0.5);
+        }
     }
 
     .particle {
@@ -52,22 +142,22 @@
         animation: particle-fall 1s ease-out forwards;
         pointer-events: none;
         z-index: 9998;
-        transform: translate(-50%, -50%) scale(1);
+        transform: translate(-20%, -20%) scale(1);
         opacity: 1;
     }
 
     @keyframes particle-fall {
         0% {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1) rotate(0deg);
+            transform: translate(-20%, -20%) scale(1) rotate(0deg);
         }
         50% {
             opacity: 0.8;
-            transform: translate(calc(-50% + var(--x-offset)), calc(-50% + 50px)) scale(0.8) rotate(180deg);
+            transform: translate(calc(-20% + var(--x-offset)), calc(-20% + 50px)) scale(0.8) rotate(180deg);
         }
         100% {
             opacity: 0;
-            transform: translate(calc(-50% + var(--x-offset)), calc(-50% + 100px)) scale(0.5) rotate(360deg);
+            transform: translate(calc(-20% + var(--x-offset)), calc(-20% + 100px)) scale(0.5) rotate(360deg);
         }
     }
     button {
@@ -118,16 +208,39 @@
 </head>
 <body>
     <h1>自定义鼠标测试</h1>
+    <div id="trail-container"></div>
     <div class="container">
     <div class="custom-cursor"></div>
 
     <script>
         const cursor = document.querySelector('.custom-cursor');
-
+        
         document.addEventListener('mousemove', (e) => {
+            const offsetX = 50; // 水平偏移量
+            const offsetY = 50; 
             cursor.style.left = `${e.pageX}px`;
             cursor.style.top = `${e.pageY}px`;
         });
+
+
+    const trailContainer = document.getElementById('trail-container');
+
+    document.addEventListener('mousemove', (e) => {
+        // 创建轨迹元素
+        const trail = document.createElement('div');
+        trail.classList.add('cursor-trail');
+        trail.style.left = `${e.pageX}px`;
+        trail.style.top = `${e.pageY}px`;
+
+        // 将轨迹元素添加到容器中
+        trailContainer.appendChild(trail);
+
+        // 动画结束后移除轨迹元素
+        trail.addEventListener('animationend', () => {
+            trail.remove();
+        });
+    });
+
 
         document.addEventListener('click', (e) => {
             cursor.style.transform = 'translate(-50%, -50%) scale(0.8)';
